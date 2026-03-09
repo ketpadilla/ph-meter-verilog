@@ -1,0 +1,142 @@
+## VERILOG (AI-GENERATED)
+# Generic generated files
+*.out
+*.log
+*.jou
+*.wdb
+*.obj
+*.bin
+*.hex
+*.elf
+*.dat
+*.mem
+*.tbl
+*.list
+
+# Simulation files (Icarus Verilog, GTKWave, Verilator)
+iverilog.exe
+vvp.exe
+simv
+simv.daidir/
+simv.db.dir/
+*.vcd
+*.ghw
+wave.ghw
+output.vcd
+
+# Build/Release folders
+build/
+release/
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# Netlists and intermediate files
+*.blif
+*.vqm
+netlist/
+results/
+temp/
+
+# Project/workspace files for common IDEs/tools (VS Code, Xilinx Vivado, Intel Quartus)
+# VS Code
+.vscode/
+# Vivado
+.Xil/
+.hw/
+.cache/
+.runs/
+.sim/
+.srcs/
+*.xpr
+*.xpr.backup
+*.xise
+*.xst
+*.rpt
+*.ngc
+*.edf
+*.bit
+*.mcs
+*.bgn
+*.mhs
+*.mss
+*.drc
+*.pb
+*.html
+*.xml
+*.tcl
+*.ltx
+# Quartus Prime
+assignment_defaults.qdf
+db/
+incremental_db/
+output_files/
+quartus.ip_user_files/
+*.qpf
+*.qws
+*.qula
+*.sof
+*.pof
+*.rbf
+*.srec
+*.flash
+
+# Other miscellaneous files
+*~
+*\#*
+.\#*
+
+## WINDOWS
+# Windows thumbnail cache files
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+
+# Dump file
+*.stackdump
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+
+## MACOS
+# General
+.DS_Store
+__MACOSX/
+.AppleDouble
+.LSOverride
+Icon[
+]
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
