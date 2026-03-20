@@ -1,5 +1,6 @@
 ## VERILOG (AI-GENERATED)
 # Generic generated files
+out/
 *.out
 *.log
 *.jou

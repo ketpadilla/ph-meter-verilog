@@ -1,5 +1,5 @@
 module display_module #(
-    parameter RESEARCH_DIV = 16'd50_000_000
+    parameter integer REFRESH_DIV = 50_000
 )(
     input wire clk,
     input wire rst,
@@ -23,7 +23,7 @@ module display_module #(
     assign thousands = (ph_value / 1000) % 10;
     assign hundreds = (ph_value / 100) % 10;
     assign tens = (ph_value / 10) % 10;
-    assign ones = (ph_value / 10);
+    assign ones = ph_value % 10;
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -66,7 +66,7 @@ module display_module #(
                 2'd2: begin
                     an = 4'b1011;
                     digit_bcd = tens;
-                    dp = 1'b1
+                    dp = 1'b1;
                 end
 
                 2'd3: begin
@@ -86,7 +86,7 @@ module display_module #(
 
 
 
-    # BCD to 7-segment decoder
+    // BCD to 7-segment decoder
     always @(*) begin
         case (digit_bcd)
             4'd0: seg = 7'b1000000;

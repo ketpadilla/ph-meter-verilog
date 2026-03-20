@@ -1,102 +1,99 @@
-module main_standby #(
-    parameter DISPLAY_HOLD_MAX = 32'd50_000_000
+`timescale 1ns/1ps
+
+module main #(
+    parameter DISPLAY_HOLD_MAX = 32'd50_000_000,
+    parameter integer REFRESH_DIV = 50_000
 )(
-    input wire clk,
-    input wire rst,
-    input wire on_off,
-    input wire [11:0] sense,
+    input  wire               clk,
+    input  wire               rst,
+    input  wire               on_off,
+    input  wire [11:0]        sense,
 
-    output reg ph_ready,
-    output reg [11:0] sense_latched,
-    output reg [1:0] state_dbg
+    // Calibration inputs
+    input  wire signed [15:0] cal_y1,
+    input  wire signed [15:0] cal_y2,
+    input  wire signed [15:0] cal_y3,
+    input  wire               calib_store_en,
+
+    // 7-segment display outputs
+    output wire [3:0]         an,
+    output wire [6:0]         seg,
+    output wire               dp,
+
+    // Debug outputs
+    output wire               ph_ready_dbg,
+    output wire [11:0]        sense_latched_dbg,
+    output wire [1:0]         state_dbg,
+    output wire signed [31:0] slope_dbg,
+    output wire signed [31:0] intercept_dbg,
+    output wire signed [31:0] ph_value_dbg
 );
-    
-    localparam S_OFF = 2'd0;
-    localparam S_STANDBY = 2'd1;
-    localparam S_DISPLAY = 2'd2;
 
-    reg [1:0] state, next_state;
-    reg [31:0] display_counter;
+    wire ph_ready;
+    wire [11:0] sense_latched;
+    wire [1:0] standby_state_dbg;
 
-    wire stable;
-    wire [11:0] stable_sense;
+    wire signed [31:0] slope;
+    wire signed [31:0] intercept;
+    wire signed [31:0] ph_value;
 
-    checkstability #(
-        .WIDTH(12),
-        .TOLERANCE(12'd4),
-        .STABLE_COUNT_MAX(8)
-    ) u_checkstability (
+    wire signed [15:0] sense_latched_signed;
+    wire [13:0] ph_display_value;
+
+    assign sense_latched_signed = {4'd0, sense_latched};
+    assign ph_display_value = ph_value[13:0];
+
+    standby #(
+        .DISPLAY_HOLD_MAX(DISPLAY_HOLD_MAX)
+    ) u_standby (
         .clk(clk),
         .rst(rst),
-        en(state == S_STANDBY),
+        .on_off(on_off),
         .sense(sense),
-        .stable(stable),
-        .stable_sense(stable_sense)
+        .ph_ready(ph_ready),
+        .sense_latched(sense_latched),
+        .state_dbg(standby_state_dbg)
     );
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            state <= S_OFF;
-            display_counter <= 0;
-            sense_latched <= 0;
-        end
+    calibration_engine u_calibration_engine (
+        .y1_call(cal_y1),
+        .y2_call(cal_y2),
+        .y3_call(cal_y3),
+        .y_stable(sense_latched_signed),
+        .clk(clk),
+        .reset(rst),
+        .store_en(calib_store_en),
+        .slope(slope),
+        .intercept(intercept)
+    );
 
-        else begin
-            state <= next_state;
+    ph_compute u_ph_compute (
+        .clk(clk),
+        .reset(rst),
+        .store_en(calib_store_en),
+        .slope_call(slope),
+        .intercept_call(intercept),
+        .y_now(sense_latched_signed),
+        .ph_value(ph_value)
+    );
 
-            if (state == S_STANDBY && stable)
-                sense_latched <= stable_sense;
+    display_module #(
+        .REFRESH_DIV(REFRESH_DIV)
+    ) u_display_module (
+        .clk(clk),
+        .rst(rst),
+        .enable_display(ph_ready),
+        .ph_value(ph_display_value),
+        .an(an),
+        .seg(seg),
+        .dp(dp)
+    );
 
-            if (state == S_DISPLAY) begin
-                if (display_counter < DISPLAY_HOLD_MAX)
-                    display_counter <= display_counter + 1'b1;
-                else
-                    display_counter <= 0;
-            end
-
-            else begin
-                display_counter <= 0;
-            end
-        end
-    end
-
-    always @(*) begin
-        next_state = state;
-
-        case (state)
-            S_OFF: begin
-                if (on_off)
-                    next_state = S_STANDBY;
-            end
-
-            S_STANDBY: begin
-                if (!on_off)
-                    next_state = S_OFF;
-                else if (stable)
-                    next_state = S_DISPLAY;
-            end
-
-            S_DISPLAY: begin
-                if (!on_off)
-                    next_state = S_OFF;
-                else if (display_counter >= DISPLAY_HOLD_MAX)
-                    next_state = S_STANDBY;
-            end
-
-            default: next_state = S_OFF;
-        endcase
-    end
-
-    always @(*) begin
-        ph_ready = 1'b0;
-        state_dbg = state;
-
-        case(state)
-            S_OFF: ph_ready = 1'b0;
-            S_STANDBY: ph_ready = 1'b0;
-            S_DISPLAY: ph_ready = 1'b1;
-            default: ph_ready = 1'b0;
-        endcase
-    end
+    assign ph_ready_dbg = ph_ready;
+    assign sense_latched_dbg = sense_latched;
+    assign state_dbg = standby_state_dbg;
+    assign slope_dbg = slope;
+    assign intercept_dbg = intercept;
+    assign ph_value_dbg = ph_value;
 
 endmodule
