@@ -12,7 +12,7 @@ module checkStability #(
 );
 
     reg [WIDTH-1:0] prev_sense;
-    reg [7:0] stable count;
+    reg [7:0] stable_count;
     wire [WIDTH-1:0] diff;
     assign diff = (sense >= prev_sense) ? (sense - prev_sense) : (prev_sense - sense);
     
